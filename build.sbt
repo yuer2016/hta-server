@@ -41,7 +41,7 @@ lazy val project = Project(
       )
     },
     test in assembly := {},
-    mainClass in assembly := Some("com.amitek.TermSimulator"),
+    mainClass in assembly := Some("com.yicheng.statistics.HtaServer"),
     assemblyOutputPath in assembly := file(s"./release/${name.value}-${version.value}.jar")
   )
 )
