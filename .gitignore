@@ -1,0 +1,9 @@
+*.iml
+*.ipr
+*.iws
+.idea/
+/target/
+/log/
+.DS_Store
+src/gen/
+src/test/scala/com/amitek/gateway/actor/
