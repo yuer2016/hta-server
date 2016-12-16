@@ -55,6 +55,13 @@ trait AlarmRepository {
              and B.device_type = device_type and B.device_id = device_id """.as[BaseAlarm].head)
   }
 
+  def getDeviceIdAndType:Future[Seq[(String, Int)]] = {
+    db.run(
+      sql"""SELECT T.DeviceID,T.DeviceType FROM
+           pub_tbox T WHERE T.IsDeleted = 0 """.as[(String, Int)])
+  }
+
+
   def addBatteryAlarm(batteryAlarm: BatteryAlarm):Future[Int] = {
     alarm.run(
       sqlu"""INSERT INTO bi_hta_battery_alarm(deviceID,deviceType,alarmstarttime,alarmendtime,startlon,startlat,endlon,endlat,startmileage,
@@ -95,9 +102,20 @@ trait AlarmRepository {
   def addVehicleDrivingBehavior(vdb: VehicleDrivingBehavior):Future[Int] = {
     alarm.run(
       sqlu""" INSERT INTO bi_hta_vehicle_drivingbehavior(deviceID,deviceType,latitude,longitude,time,type,
-            totalmileage,createtime) VALUES(${vdb.device_id},${vdb.device_type},${vdb.latitude},${vdb.longitude},
+            totalmileage,createtime) VALUES (${vdb.device_id},${vdb.device_type},${vdb.latitude},${vdb.longitude},
             ${vdb.time},${vdb.vdbtype},${vdb.totalmileage},${vdb.createdatetime}) """)
   }
+
+  def addVehicleMileage(vm: VehicleMileage):Future[Int] = {
+    alarm.run(
+      sqlu"""INSERT INTO bi_hta_vehicle_mileage(deviceID,deviceType,startlat,endlat,startlon,endlon,startmileage,
+            endmileage,starttime,endtime,createtime,analysedate,totalshock,remark) VALUES
+            (${vm.device_id},${vm.device_type},${vm.startlat},${vm.endlat},${vm.startlon}
+            ,${vm.endlon},${vm.startmileage},${vm.endmileage},${vm.starttime},${vm.endtime},
+            ${vm.createtime},${vm.analysedate},${vm.totalshock},${vm.remark})""")
+  }
 }
+
+
 
 object AlarmDB extends AlarmRepository with RTADBCompoent
