@@ -6,6 +6,7 @@ import akka.actor.SupervisorStrategy.Stop
 import akka.actor.{Actor, ActorLogging, ActorRef, Props, ReceiveTimeout}
 import com.yicheng.statistics.repo.RTAModel._
 import com.yicheng.statistics.repo.model.AlarmUtils
+import com.yicheng.statistics.repo.model.Data.DataVehicle
 import com.yicheng.statistics.service.HTAService
 import play.api.libs.json.Json
 
@@ -82,6 +83,14 @@ class HtaAnalysis extends Actor with ActorLogging {
           val vehicleDrivingBehavior = conversion2VehicleDrivingBehavior(baseAlarm,nowDate)
           saveHtaDataActor ! vehicleDrivingBehavior
       }
+    case (head:DataVehicle,last:DataVehicle) =>
+      val nowDate = new Date
+      saveHtaDataActor ! VehicleMileage(device_type= head.device_type,device_id = head.device_id,startmileage =
+        head.vehicle_data.get.current_mileage, endmileage =last.vehicle_data.get.current_mileage,
+        starttime = head.data_time,endtime = last.data_time,analysedate = nowDate,createtime = nowDate,
+        startlat = head.pos_data.get.latitude,startlon = head.pos_data.get.longitude,
+        endlat = last.pos_data.get.latitude,endlon = last.pos_data.get.longitude
+      )
     case ReceiveTimeout =>
       context.parent !  Stop
   }

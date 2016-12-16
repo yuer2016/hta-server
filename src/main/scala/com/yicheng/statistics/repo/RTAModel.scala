@@ -220,46 +220,30 @@ object RTAModel {
     * @param endmileage 结束里程
     * @param starttime 开始时间
     * @param endtime 结束时间
-    * @param moveTime 移动时间
     * @param analysedate 分析日期
     * @param createtime 创建时间
     * @param remark 备注
-    * @param analysegroupsid 分析组id
-    * @param isonline 是否在线
-    * @param maxspeed 最高速度
-    * @param averagespeed 平均速度
-    * @param unitid 车辆所属单位id
     * @param startlon 开始经度
     * @param startlat 开始纬度
     * @param endlon 结束经度
     * @param endlat 结束纬度
-    * @param lineId 在线id
     * @param totalshock 总耗电量
     *
     * */
   case class VehicleMileage(device_type:Int,
                             device_id:String,
-                            startmileage:Int,
-                            endmileage:Int,
+                            startmileage:Option[Float] =None,
+                            endmileage:Option[Float] =None,
                             starttime:Date,
                             endtime:Date,
-                            moveTime:Date,
                             analysedate:Date,
                             createtime:Date,
-                            remark:String,
-                            analysegroupsid:Int,
-                            isonline:Int,
-                            maxspeed:Int,
-                            averagespeed:Int,
-                            unitid:Int,
-                            startlon:Int,
-                            startlat:Int,
-                            startposition:String,
-                            endlon:Int,
-                            endlat:Int,
-                            endposition:String,
-                            lineId:Int,
-                            totalshock:String)
+                            remark:Option[String] = None,
+                            startlon:Option[Double]= None,
+                            startlat:Option[Double]= None,
+                            endlon:Option[Double]= None,
+                            endlat:Option[Double]= None,
+                            totalshock:Option[String] = None)
   /**
     * 驾驶行为统计
     * @param device_type 设备类型

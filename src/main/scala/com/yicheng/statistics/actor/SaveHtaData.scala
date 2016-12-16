@@ -2,7 +2,7 @@ package com.yicheng.statistics.actor
 
 import akka.actor.{Actor, ActorLogging}
 import com.yicheng.statistics.common.AlarmDB
-import com.yicheng.statistics.repo.RTAModel.{BatteryAlarm, VehicleDrivingBehavior, VehicleSpeed, VehicleTired}
+import com.yicheng.statistics.repo.RTAModel._
 
 /**
   * Created by yuer on 2016/12/2.
@@ -17,6 +17,8 @@ class SaveHtaData extends Actor with ActorLogging{
       AlarmDB.addVehicleSpeed(vehicleSpeed)
     case vehicleDrivingBehavior: VehicleDrivingBehavior =>
       AlarmDB.addVehicleDrivingBehavior(vehicleDrivingBehavior)
+    case  vehicleMileage:VehicleMileage =>
+      AlarmDB.addVehicleMileage(vehicleMileage)
 
   }
 }
