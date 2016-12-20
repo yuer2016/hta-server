@@ -30,11 +30,11 @@ trait AlarmRepository {
              GROUP BY B.device_id , B.device_type, B.alarm_start """.as[BaseAlarm])
   }
 
-  def getLastAlarmDataBySource(device_type:Int,device_id:String,alarm_start: Date, alarm_stop: Date, alarmSource: Int): Future[BaseAlarm] = {
+  def getLastAlarmDataBySource(device_type:Int,device_id:String, alarm_stop: Date, alarmSource: Int): Future[BaseAlarm] = {
     db.run(sql"""SELECT B.device_type,B.device_id,B.alarm_type,B.alarm_source,B.alarm_cnt,B.alarm_time,B.alarm_start,
              B.alarm_stop,B.alarm_level,B.alarm_data,B.latitude,B.longitude,B.height,B.speed,
              B.direction FROM basealarm B WHERE B.alarm_source = ${alarmSource}
-             and B.alarm_start = ${alarm_start} and B.alarm_stop = ${alarm_stop}
+             and B.alarm_stop = ${alarm_stop}
              and B.device_type = device_type and B.device_id = device_id  """.as[BaseAlarm].head)
   }
 
@@ -47,12 +47,12 @@ trait AlarmRepository {
              GROUP BY B.device_id , B.device_type, B.alarm_start """.as[BaseAlarm])
   }
 
-  def getLastAlarmDataByType(device_type:Int,device_id:String,alarm_start: Date, alarm_stop: Date, alarmType: Int): Future[BaseAlarm] = {
+  def getLastAlarmDataByType(device_type:Int,device_id:String,alarm_stop: Date, alarmType: Int): Future[BaseAlarm] = {
     db.run(sql"""SELECT B.device_type,B.device_id,B.alarm_type,B.alarm_source,B.alarm_cnt,B.alarm_time,B.alarm_start,
              B.alarm_stop,B.alarm_level,B.alarm_data,B.latitude,B.longitude,B.height,B.speed,
              B.direction FROM basealarm B WHERE B.alarm_type = ${alarmType}
-             and B.alarm_start = ${alarm_start} and B.alarm_stop = ${alarm_stop}
-             and B.device_type = device_type and B.device_id = device_id """.as[BaseAlarm].head)
+             and B.alarm_stop = ${alarm_stop}
+             and B.device_type = ${device_type} and B.device_id = ${device_id}""".as[BaseAlarm].head)
   }
 
   def getDeviceIdAndType:Future[Seq[(String, Int)]] = {
@@ -113,6 +113,16 @@ trait AlarmRepository {
             (${vm.device_id},${vm.device_type},${vm.startlat},${vm.endlat},${vm.startlon}
             ,${vm.endlon},${vm.startmileage},${vm.endmileage},${vm.starttime},${vm.endtime},
             ${vm.createtime},${vm.analysedate},${vm.totalshock},${vm.remark})""")
+  }
+
+  def addAreaInout(ai: AreaInout):Future[Int] = {
+    alarm.run(
+      sqlu""" INSERT INTO bi_iaa_area_inout(deviceID,deviceType,intodatetime,
+         	outdatetime,totaltime,intolon,intolat,outlon,outlat,analyseconditions,createdatetime,
+          intomileage,outmileage,coverageid,analysegroupsid,coveragename) VALUES (${ai.device_id},${ai.device_type},
+          ${ai.intodatetime},${ai.outdatetime},${ai.totaltime},
+          ${ai.intolon},${ai.intolat},${ai.outlon},${ai.outlat},${ai.analyseconditions},${ai.createdatetime},
+          ${ai.intomileage},${ai.outmileage},${ai.coverageid},${ai.analysegroupsid},${ai.coveragename}) """)
   }
 }
 
