@@ -4,7 +4,7 @@ import akka.actor.{ActorSystem, Props}
 import com.typesafe.config.ConfigFactory
 import com.yicheng.statistics.actor.HtaRouting
 import com.yicheng.statistics.common.AlarmDB
-
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.collection.JavaConversions._
 
 /**
@@ -18,7 +18,6 @@ object HtaServer {
     config.getIntList("alarm.type") foreach (alarmType =>
       routing ! alarmType
     )
-
     AlarmDB.getDeviceIdAndType foreach { device =>
       routing ! device
     }

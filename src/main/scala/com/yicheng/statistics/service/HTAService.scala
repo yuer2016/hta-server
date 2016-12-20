@@ -24,14 +24,14 @@ object HTAService {
       }
   }
 
-  def getLastAlarmData(device_type:Int,device_id:String,alarm_start:Date,alarm_stop:Date,alarmType:Int):Future[BaseAlarm] ={
+  def getLastAlarmData(device_type:Int,device_id:String,alarm_stop:Date,alarmType:Int):Future[BaseAlarm] ={
     alarmType match {
       case AlarmUtils.battery_alarm =>
-        AlarmDB.getLastAlarmDataBySource(device_type:Int,device_id:String,alarm_start,alarm_stop,AlarmUtils.battery_alarm)
+        AlarmDB.getLastAlarmDataBySource(device_type:Int,device_id:String,alarm_stop,AlarmUtils.battery_alarm)
       case typ:Int if(1000 to 1999) contains typ =>
-        AlarmDB.getLastAlarmDataByType(device_type:Int,device_id:String,alarm_start,alarm_stop,typ)
+        AlarmDB.getLastAlarmDataByType(device_type:Int,device_id:String,alarm_stop,typ)
       case typ:Int if(10000 to 29999) contains typ =>
-        AlarmDB.getLastAlarmDataByType(device_type:Int,device_id:String,alarm_start,alarm_stop,typ)
+        AlarmDB.getLastAlarmDataByType(device_type:Int,device_id:String,alarm_stop,typ)
     }
   }
 

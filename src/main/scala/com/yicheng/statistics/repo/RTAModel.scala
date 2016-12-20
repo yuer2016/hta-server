@@ -199,18 +199,18 @@ object RTAModel {
                        device_id:String,
                        intodatetime:Date,
                        outdatetime:Date,
-                       totaltime:Date,
-                       intolon:Int,
-                       intolat:Int,
-                       outlon:Int,
-                       outlat:Int,
-                       coverageid:Int,
-                       coveragename:String,
-                       analysegroupsid:Int,
-                       analyseconditions:String,
+                       totaltime:Int,
+                       intolon:Option[Double]= None,
+                       intolat:Option[Double]= None,
+                       outlon:Option[Double]= None,
+                       outlat:Option[Double]= None,
+                       coverageid:Option[Int]= None,
+                       coveragename:Option[String]= None,
+                       analysegroupsid:Option[Int]= None,
+                       analyseconditions:Option[String]= None,
                        createdatetime:Date,
-                       intomileage:Int,
-                       outmileage:Int)
+                       intomileage:Option[Int]= None,
+                       outmileage:Option[Int]= None)
 
   /**
     * 行驶里程统计

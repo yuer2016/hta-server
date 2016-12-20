@@ -31,8 +31,8 @@ class HtaAnalysis extends Actor with ActorLogging {
         case AlarmUtils.battery_alarm => //电池报警统计
           val batteryAlarm = conversion2BatteryAlarm(baseAlarm,nowDate)
           if (baseAlarm.alarm_start.getOrElse(nowDate) before baseAlarm.alarm_stop.getOrElse(nowDate)) {
-            HTAService.getLastAlarmData(baseAlarm.device_type,baseAlarm.device_id,baseAlarm.alarm_start.get,
-              baseAlarm.alarm_stop.get, baseAlarm.alarm_source) onComplete {
+            HTAService.getLastAlarmData(baseAlarm.device_type,baseAlarm.device_id, baseAlarm.alarm_stop.get,
+              baseAlarm.alarm_source) onComplete {
               case Success(lastAlarm) =>
                 val json = Json.parse(lastAlarm.alarm_data)
                 val current_mileage = (json \ "vehicle_data" \ "current_mileage").asOpt[Int]
@@ -47,7 +47,7 @@ class HtaAnalysis extends Actor with ActorLogging {
         case AlarmUtils.vehicle_tired => //疲劳驾驶统计
           val vehicleTired = conversion2VehicleTired(baseAlarm,nowDate)
           if (baseAlarm.alarm_start.getOrElse(nowDate) before baseAlarm.alarm_stop.getOrElse(nowDate)) {
-            HTAService.getLastAlarmData(baseAlarm.device_type,baseAlarm.device_id,baseAlarm.alarm_start.get,
+            HTAService.getLastAlarmData(baseAlarm.device_type,baseAlarm.device_id,
               baseAlarm.alarm_stop.get, baseAlarm.alarm_type) onComplete {
               case Success(lastAlarm) =>
                 val json = Json.parse(lastAlarm.alarm_data)
@@ -68,18 +68,37 @@ class HtaAnalysis extends Actor with ActorLogging {
         case AlarmUtils.vehicle_speed => //超速驾驶统计
           val vehicleSpeed = conversion2VehicleSpeed(baseAlarm,nowDate)
           if (baseAlarm.alarm_start.getOrElse(nowDate) before baseAlarm.alarm_stop.getOrElse(nowDate)) {
-            HTAService.getLastAlarmData(baseAlarm.device_type,baseAlarm.device_id,baseAlarm.alarm_start.get,
+            HTAService.getLastAlarmData(baseAlarm.device_type,baseAlarm.device_id,
               baseAlarm.alarm_stop.get, baseAlarm.alarm_type) onComplete {
               case Success(lastAlarm) =>
-                println("发送消息:{}",lastAlarm)
+                log.info("发送消息:{}",lastAlarm)
                 saveHtaDataActor ! vehicleSpeed.copy(endlat = lastAlarm.latitude, endlon = lastAlarm.longitude)
               case Failure(error) => log.info(error.getMessage)
             }
           } else {
             saveHtaDataActor ! vehicleSpeed
           }
-          //驾驶行为统计信息
-        case tpe:Int if(1102 until 1103) contains tpe  =>
+        case 11004 => //进出区域报警统计
+          val areaInout  = conversion2AreaInout(baseAlarm,nowDate)
+          if(baseAlarm.alarm_start.nonEmpty){
+            HTAService.getLastAlarmData(baseAlarm.device_type,baseAlarm.device_id,
+              baseAlarm.alarm_start.get, 11005) onComplete {
+              case Success(lastAlarm) =>
+                val json = Json.parse(lastAlarm.alarm_data)
+                val totalTime = ((baseAlarm.alarm_time.getTime - lastAlarm.alarm_time.getTime)/1000).toInt
+                val current_mileage = (json \ "vehicle_data" \ "current_mileage").asOpt[Int]
+                log.info("发送消息:{}",lastAlarm)
+                saveHtaDataActor ! areaInout.copy(outmileage = current_mileage,
+                  outlat = lastAlarm.latitude, outlon = lastAlarm.longitude,
+                  totaltime = totalTime)
+              case Failure(error) => log.info(error.getMessage)
+            }
+          }else{
+            saveHtaDataActor ! areaInout
+          }
+
+
+        case tpe:Int if(1102 to 1103) contains tpe  => //驾驶行为统计信息
           val vehicleDrivingBehavior = conversion2VehicleDrivingBehavior(baseAlarm,nowDate)
           saveHtaDataActor ! vehicleDrivingBehavior
       }
@@ -153,6 +172,19 @@ class HtaAnalysis extends Actor with ActorLogging {
     VehicleDrivingBehavior(device_id =baseAlarm.device_id,device_type = baseAlarm.device_type,
       longitude = baseAlarm.longitude.getOrElse(0.0),latitude = baseAlarm.latitude.getOrElse(0.0),
       time = baseAlarm.alarm_time, vdbtype = baseAlarm.alarm_type, createdatetime = nowDate)
+  }
+
+  def conversion2AreaInout(baseAlarm:BaseAlarm,nowDate:Date):AreaInout ={
+    val json = Json.parse(baseAlarm.alarm_data)
+    val param_id = (json \ "alarm_param" \ "param_id").asOpt[Int]
+    val alarm_mobile = (json \ "alarm_param" \ "alarm_mobile").asOpt[Int] //扩展为分析区域id
+    val current_mileage = (json \ "vehicle_data" \ "current_mileage").asOpt[Int]
+    AreaInout(device_id =baseAlarm.device_id,device_type = baseAlarm.device_type,
+      createdatetime = nowDate,intodatetime = baseAlarm.alarm_time,outdatetime = baseAlarm.alarm_time,
+      totaltime = 0,analysegroupsid = param_id,intomileage = current_mileage,outmileage =current_mileage,
+      intolon= baseAlarm.longitude,intolat = baseAlarm.latitude,outlon=baseAlarm.longitude,outlat = baseAlarm.latitude
+      ,coverageid = alarm_mobile
+    )
   }
 
 }
