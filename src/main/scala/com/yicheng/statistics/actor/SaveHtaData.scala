@@ -19,6 +19,7 @@ class SaveHtaData extends Actor with ActorLogging{
       AlarmDB.addVehicleDrivingBehavior(vehicleDrivingBehavior)
     case  vehicleMileage:VehicleMileage =>
       AlarmDB.addVehicleMileage(vehicleMileage)
-
+    case areaInout:AreaInout =>
+      AlarmDB.addAreaInout(areaInout)
   }
 }
