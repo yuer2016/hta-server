@@ -12,12 +12,12 @@ import scala.collection.JavaConversions._
   */
 object HtaServer {
   def main(args: Array[String]) {
-    val config = ConfigFactory.load()
+    //val config = ConfigFactory.load()
     val actorSystem = ActorSystem("HtaServer")
     val routing = actorSystem.actorOf(Props[HtaRouting],"routing")
-    config.getIntList("alarm.type") foreach (alarmType =>
+    /*config.getIntList("alarm.type") foreach (alarmType =>
       routing ! alarmType
-    )
+    )*/
     AlarmDB.getDeviceIdAndType foreach { device =>
       routing ! device
     }

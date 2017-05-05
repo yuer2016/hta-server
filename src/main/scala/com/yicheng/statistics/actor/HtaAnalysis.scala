@@ -6,7 +6,7 @@ import akka.actor.SupervisorStrategy.Stop
 import akka.actor.{Actor, ActorLogging, ActorRef, Props, ReceiveTimeout}
 import com.yicheng.statistics.repo.RTAModel._
 import com.yicheng.statistics.repo.model.AlarmUtils
-import com.yicheng.statistics.repo.model.Data.DataVehicle
+import com.yicheng.statistics.repo.model.Data.{DataMqtt, DataVehicle}
 import com.yicheng.statistics.service.HTAService
 import play.api.libs.json.Json
 
@@ -32,7 +32,7 @@ class HtaAnalysis extends Actor with ActorLogging {
           val batteryAlarm = conversion2BatteryAlarm(baseAlarm,nowDate)
           if (baseAlarm.alarm_start.getOrElse(nowDate) before baseAlarm.alarm_stop.getOrElse(nowDate)) {
             HTAService.getLastAlarmData(baseAlarm.device_type,baseAlarm.device_id, baseAlarm.alarm_stop.get,
-              baseAlarm.alarm_source) onComplete {
+              baseAlarm.alarm_type) onComplete {
               case Success(lastAlarm) =>
                 val json = Json.parse(lastAlarm.alarm_data)
                 val current_mileage = (json \ "vehicle_data" \ "current_mileage").asOpt[Int]
@@ -110,6 +110,15 @@ class HtaAnalysis extends Actor with ActorLogging {
         startlat = head.pos_data.get.latitude,startlon = head.pos_data.get.longitude,
         endlat = last.pos_data.get.latitude,endlon = last.pos_data.get.longitude
       )
+    case (head:DataMqtt,last:DataMqtt) =>
+      val nowDate = new Date
+      saveHtaDataActor ! VehicleMileage(device_type= head.device_type,device_id = head.device_id,startmileage =
+        head.track_data.get.get(33554443).map(_.toFloat), endmileage =last.track_data.get.get(33554443).map(_.toFloat),
+        starttime = head.data_time,endtime = last.data_time,analysedate = nowDate,createtime = nowDate,
+        startlat = head.pos_data.get.latitude,startlon = head.pos_data.get.longitude,
+        endlat = last.pos_data.get.latitude,endlon = last.pos_data.get.longitude
+      )
+
     case ReceiveTimeout =>
       context.parent !  Stop
   }
