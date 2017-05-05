@@ -3,6 +3,7 @@ package com.yicheng.statistics.common
 import java.util.Date
 
 import com.yicheng.statistics.repo.RTAModel._
+import com.yicheng.statistics.repo.model.AlarmUtils
 import slick.jdbc.GetResult
 
 import scala.concurrent.Future
@@ -15,25 +16,23 @@ trait AlarmRepository {
 
   import driver.api._
 
-  private def parseDate(date: Date): java.sql.Timestamp = {
-    new java.sql.Timestamp(date.getTime)
-  }
   implicit val getBaseAlarmResult = GetResult(u => BaseAlarm(u.<<, u.<<, u.<<, u.<<, u.<<, u.<<, u.<<?, u.<<?, u.<<?,
     u.<<, u.<<?, u.<<?, u.<<?, u.<<?, u.<<?,u.<<?,u.<<?,u.<<?))
 
-  def getFirstAlarmDataBySource(alarmSource: Int):Future[Seq[BaseAlarm]] = {
+  def getFirstAlarmDataBySource:Future[Seq[BaseAlarm]] = {
     db.run(sql"""SELECT B.device_type,B.device_id,B.alarm_type,B.alarm_source,B.alarm_cnt,
              B.alarm_time,B.alarm_start,MAX(B.alarm_stop) AS alarm_stop ,
              B.alarm_level,B.alarm_data,B.latitude,B.longitude,B.height,B.speed,
              B.direction,MAX(B.speed) AS maxspeed, MIN(B.speed) AS minspeed,AVG(B.speed) AS averagespeed
-             FROM basealarm B WHERE B.alarm_source = ${alarmSource}
+             FROM basealarm B WHERE B.alarm_type > ${AlarmUtils.BATTERY_ALARM_BEGIN} AND
+             B.alarm_type < ${AlarmUtils.BATTERY_ALARM_END}
              GROUP BY B.device_id , B.device_type, B.alarm_start """.as[BaseAlarm])
   }
 
-  def getLastAlarmDataBySource(device_type:Int,device_id:String, alarm_stop: Date, alarmSource: Int): Future[BaseAlarm] = {
+  def getLastAlarmDataBySource(device_type:Int,device_id:String, alarm_stop: Date, alarmType: Int): Future[BaseAlarm] = {
     db.run(sql"""SELECT B.device_type,B.device_id,B.alarm_type,B.alarm_source,B.alarm_cnt,B.alarm_time,B.alarm_start,
              B.alarm_stop,B.alarm_level,B.alarm_data,B.latitude,B.longitude,B.height,B.speed,
-             B.direction FROM basealarm B WHERE B.alarm_source = ${alarmSource}
+             B.direction FROM basealarm B WHERE B.alarm_type = ${alarmType}
              and B.alarm_stop = ${alarm_stop}
              and B.device_type = device_type and B.device_id = device_id  """.as[BaseAlarm].head)
   }
