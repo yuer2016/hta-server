@@ -1,7 +1,12 @@
 import sbt.Keys._
 import sbt._
 import sbtassembly.AssemblyPlugin.autoImport._
-
+// ScalaPb task
+PB.protocVersion := "-v261"
+unmanagedSourceDirectories in Compile += sourceDirectory.value / "gen" / "scala"
+PB.targets in Compile := Seq(
+  scalapb.gen(grpc = false, flatPackage = true, singleLineToString = true) -> sourceDirectory.value / "gen" / "scala"
+)
 lazy val project = Project(
   id = "hta-server",
   base = file("."),
@@ -32,7 +37,6 @@ lazy val project = Project(
         "com.fasterxml.jackson.core" % "jackson-databind" % jacksonVersion,
         "com.fasterxml.jackson.module" %% "jackson-module-scala" % jacksonVersion,
         "mysql" % "mysql-connector-java" % "5.1.38",
-        "com.aliyun.oss" % "aliyun-sdk-oss" % "2.0.7",
         "org.apache.httpcomponents" % "httpclient" % "4.4",
         "org.jdom" % "jdom" % "1.1",
         "io.spray" %% "spray-json" % "1.3.2",
